@@ -3,6 +3,8 @@ package com.jeido.javaio.exercises.exercise2;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Exercise2 {
@@ -10,7 +12,9 @@ public class Exercise2 {
     private static final String EXO_PATH = "src/main/resources/exercise2";
     private static final String LOG_PATH = EXO_PATH + "/journal.txt";
     private static final String BACKUP_PATH = EXO_PATH + "/journal_backup.dat";
+    private static final String ACTIVITY_PATH = EXO_PATH + "/Activity.txt";
     private static int nbLines;
+
     public static void main(String[] args) {
         while (true) {
             System.out.print("""
@@ -34,9 +38,41 @@ public class Exercise2 {
     }
 
     private static void addActivity() {
-        System.out.print("Entrez une description de l'activité : ");
-        String description = sc.nextLine();
+        File activityFile = new File(ACTIVITY_PATH);
+        if (!activityFile.exists()) {
+            System.out.println("File " + ACTIVITY_PATH + " does not exist ! Cannot add activity");
+            return;
+        }
+        List<String> validActivities = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(activityFile))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                validActivities.add(line.toLowerCase());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
+        boolean flag = false;
+        String description = "";
+        while (!flag) {
+
+            StringBuilder sb = new StringBuilder("Valid activities:\n");
+            for (String active : validActivities) {
+                sb.append("- ").append(active).append("\n");
+            }
+
+            sb.append("Entrez une description de l'activité : ");
+
+            System.out.print(sb);
+
+            description = sc.nextLine();
+            if (!validActivities.contains(description.toLowerCase())) {
+                System.out.println("Saisie invalide!");
+            } else {
+                flag = true;
+            }
+        }
         LocalDateTime time = LocalDateTime.now();
 
         String activity = time.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + " - " + description;
