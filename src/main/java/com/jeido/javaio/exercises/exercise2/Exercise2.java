@@ -10,7 +10,7 @@ public class Exercise2 {
     private static final String EXO_PATH = "src/main/resources/exercise2";
     private static final String LOG_PATH = EXO_PATH + "/journal.txt";
     private static final String BACKUP_PATH = EXO_PATH + "/journal_backup.dat";
-
+    private static int nbLines;
     public static void main(String[] args) {
         while (true) {
             System.out.print("""
@@ -50,8 +50,21 @@ public class Exercise2 {
         if (!log.exists()) {
             try {
                 log.createNewFile();
+                nbLines = 0;
             } catch (IOException e) {
                 throw new RuntimeException(e);
+            }
+        } else if (nbLines == 0) {
+            try (BufferedReader br = new BufferedReader(new FileReader(log))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    nbLines++;
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            if (nbLines >= 5) {
+                backup();
             }
         }
 
@@ -59,6 +72,10 @@ public class Exercise2 {
 
             bw.write(activity + '\n');
             System.out.println("Activité ajoutée avec succès !");
+            nbLines++;
+            if (nbLines % 5 == 0) {
+                backup();
+            }
 
         } catch (IOException e) {
             System.err.println(e.getMessage());
